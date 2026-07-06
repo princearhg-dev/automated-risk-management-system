@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - TUI Risk Monitor{% endblock %}
+
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-speedometer2 me-2"></i>Security Dashboard</h4>
+
+<!-- Summary cards row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                    <i class="bi bi-calendar-event text-primary fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">Total Events</div>
+                    <div class="fw-bold fs-4" id="stat-total-events">{{ summary.total_events }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                    <i class="bi bi-bell text-warning fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">Total Alerts</div>
+                    <div class="fw-bold fs-4" id="stat-total-alerts">{{ summary.total_alerts }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
+                    <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">Unacknowledged</div>
+                    <div class="fw-bold fs-4" id="stat-unacked">{{ summary.unacknowledged_alerts }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
+                    <i class="bi bi-shield-exclamation text-danger fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-muted small">Highest Risk Level</div>
+                    <div class="fw-bold fs-5" id="stat-risk-level">{{ summary.highest_risk_level }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 fw-semibold">
+                <i class="bi bi-graph-up me-2 text-primary"></i>Alert Activity (Last 24 Hours)
+            </div>
+            <div class="card-body">
+                <canvas id="alertsTimeChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 fw-semibold">
+                <i class="bi bi-pie-chart me-2 text-primary"></i>Alerts by Severity
+            </div>
+            <div class="card-body d-flex justify-content-center">
+                <canvas id="severityPieChart" style="max-height: 200px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 fw-semibold">
+                <i class="bi bi-shield me-2 text-danger"></i>Risk Level Distribution
+            </div>
+            <div class="card-body d-flex justify-content-center">
+                <canvas id="riskPieChart" style="max-height: 200px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 fw-semibold">
+                <i class="bi bi-bell me-2 text-warning"></i>Recent Alerts
+                <a href="/alerts" class="float-end text-decoration-none small">View all</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0" id="recent-alerts-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Time</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Asset</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-alerts-body">
+                            <tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NIST Framework info panel -->
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm border-start border-info border-3">
+            <div class="card-body">
+                <h6 class="fw-semibold text-info mb-1">
+                    <i class="bi bi-info-circle me-1"></i>Risk Assessment Framework
+                </h6>
+                <p class="mb-0 small text-muted">
+                    Risk scores are calculated using the <strong>NIST SP 800-30 Rev 1</strong> methodology:
+                    <code>Risk = Likelihood &times; Impact</code> on a 1&ndash;25 scale.
+                    Levels: <span class="badge bg-success">Low (1-5)</span>
+                    <span class="badge bg-warning text-dark">Medium (6-10)</span>
+                    <span class="badge bg-orange">High (11-15)</span>
+                    <span class="badge bg-danger">Very High (16-20)</span>
+                    <span class="badge bg-dark">Critical (21-25)</span>.
+                    Detection combines rule-based analysis with statistical anomaly detection (Z-score &ge; 2.5).
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // initialise the dashboard charts and start the live update loop
+    document.addEventListener("DOMContentLoaded", function() {
+        initDashboard();
+    });
+</script>
+{% endblock %}

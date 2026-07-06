@@ -1,0 +1,65 @@
+/* style.css - custom styles for the TUI Risk Monitor dashboard */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* pulsing green live indicator in navbar */
+.pulse-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* summary stat cards */
+.card {
+    border-radius: 0.5rem;
+}
+
+/* make the orange risk badge work since Bootstrap doesn't have one by default */
+.badge.bg-orange {
+    background-color: #fd7e14 !important;
+    color: white;
+}
+
+/* fixed-height scrollable table for the recent alerts panel */
+#recent-alerts-table {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* font mono for IPs so they line up nicely */
+.font-monospace {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+}
+
+/* severity badge colours */
+.severity-critical { background-color: #212529; }
+.severity-high     { background-color: #dc3545; }
+.severity-medium   { background-color: #ffc107; color: #212529 !important; }
+.severity-low      { background-color: #198754; }
+
+/* chart container sizing */
+canvas {
+    max-width: 100%;
+}
+
+/* highlight rows with high-severity alerts */
+.table-warning td { background-color: rgba(255, 193, 7, 0.1) !important; }
+.table-danger  td { background-color: rgba(220, 53, 69, 0.1) !important; }
+
+/* footer */
+footer {
+    font-size: 0.8rem;
+}
+
+/* active nav link underline */
+.nav-link.active {
+    border-bottom: 2px solid #0d6efd;
+}

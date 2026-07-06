@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Alerts - TUI Risk Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-bell me-2"></i>Security Alerts</h4>
+    <!-- severity filter buttons -->
+    <div class="btn-group btn-group-sm">
+        <a href="/alerts?severity=all" class="btn btn-outline-secondary {% if severity_filter == 'all' %}active{% endif %}">All</a>
+        <a href="/alerts?severity=Critical" class="btn btn-outline-dark {% if severity_filter == 'Critical' %}active{% endif %}">Critical</a>
+        <a href="/alerts?severity=High" class="btn btn-outline-danger {% if severity_filter == 'High' %}active{% endif %}">High</a>
+        <a href="/alerts?severity=Medium" class="btn btn-outline-warning {% if severity_filter == 'Medium' %}active{% endif %}">Medium</a>
+        <a href="/alerts?severity=Low" class="btn btn-outline-success {% if severity_filter == 'Low' %}active{% endif %}">Low</a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Timestamp</th>
+                        <th>Alert Type</th>
+                        <th>Severity</th>
+                        <th>Source IP</th>
+                        <th>Asset</th>
+                        <th>Risk Score</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if alerts %}
+                        {% for alert in alerts %}
+                        <tr class="{% if alert.severity == 'Critical' %}table-danger{% elif alert.severity == 'High' %}table-warning{% endif %}">
+                            <td class="text-muted small">{{ alert.id }}</td>
+                            <td class="small">{{ alert.timestamp[:19] }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ alert.alert_type }}</span>
+                            </td>
+                            <td>
+                                {% if alert.severity == 'Critical' %}
+                                    <span class="badge bg-dark">{{ alert.severity }}</span>
+                                {% elif alert.severity == 'High' %}
+                                    <span class="badge bg-danger">{{ alert.severity }}</span>
+                                {% elif alert.severity == 'Medium' %}
+                                    <span class="badge bg-warning text-dark">{{ alert.severity }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ alert.severity }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="small font-monospace">{{ alert.source_ip or '—' }}</td>
+                            <td class="small">{{ alert.asset or '—' }}</td>
+                            <td>
+                                <span class="fw-bold {% if alert.risk_score >= 16 %}text-danger{% elif alert.risk_score >= 11 %}text-warning{% else %}text-success{% endif %}">
+                                    {{ alert.risk_score }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if alert.acknowledged %}
+                                    <span class="badge bg-success">Acknowledged</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Open</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not alert.acknowledged %}
+                                <button class="btn btn-outline-success btn-sm ack-btn"
+                                        data-alert-id="{{ alert.id }}">
+                                    Ack
+                                </button>
+                                {% endif %}
+                                <!-- collapsible description -->
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#desc-{{ alert.id }}">
+                                    <i class="bi bi-info"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- collapsible description row -->
+                        <tr>
+                            <td colspan="9" class="p-0">
+                                <div class="collapse" id="desc-{{ alert.id }}">
+                                    <div class="p-3 bg-light small">
+                                        <strong>Description:</strong> {{ alert.description or 'No description.' }}<br>
+                                        {% if alert.user_id %}
+                                        <strong>User:</strong> {{ alert.user_id }}<br>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                No alerts found for this filter.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // acknowledge button handler - calls the API and updates the UI
+    document.querySelectorAll(".ack-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const alertId = this.dataset.alertId;
+            fetch(`/api/alerts/acknowledge/${alertId}`, { method: "POST" })
+                .then(r => r.json())
+                .then(() => {
+                    // reload the page to show updated status
+                    location.reload();
+                });
+        });
+    });
+</script>
+{% endblock %}
